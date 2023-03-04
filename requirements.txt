@@ -1,0 +1,12 @@
+coloredlogs
+psutil
+rich
+numpy
+bitarray
+filelock
+toolz
+watchdog
+typed-argument-parser
+cgroupspy
+psutil
+peewee

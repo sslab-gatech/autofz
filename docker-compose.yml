@@ -1,0 +1,14 @@
+# docker-compose run --rm -v $DATA:/work/autofz
+version: '2.4'
+services:
+  autofz:
+    image: "fuyu0425/autofz"
+    privileged: true
+    logging:
+       driver: "json-file"
+       options:
+         max-size: "50m"
+    cpus: ${JOBS:-1}
+    # mem_limit: 1000000000
+    # memswap_limit: 2000000000
+    shm_size: 64M
