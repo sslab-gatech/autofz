@@ -9,7 +9,7 @@ Some part of the source code might use `autofuzz` (which is the old name of `aut
 
 We provided the following for artifact evaluation:
 - A pre-built docker image which includes all baseline fuzzers and benchmarks used in the paper.
-- A VM that configures all necessary things and can be used to luanch the docker containers.
+- A VM that configures all necessary things and can be used to luanch the docker containers. If you want to use the VM, plase jump to [VM setup section](#vm-setup).
 
 ## Directory Structure
 - `autofz`: main directory for autofz framework
@@ -22,7 +22,9 @@ We provided the following for artifact evaluation:
     - `aflforkserver.so`: from quickcov component of CUPID, used to get AFL bitmap coverage.
     - `wather.py`: Inotify handler for new files in fuzzer directores, modify from CollabFuzz
     - `fuzzer_driver`: directory for fuzzer API implementations
+        - `main.py`: entrypoint of fuzzer driver
         - `afl.py`: AFL-based fuzzers, same for other files
+- `afl-cov`: modifed from [original afl-cov](https://github.com/mrash/afl-cov) to do post-processing on fuzzing output to get line/branch (edge) coverage over time.
 
 
 ## Installing (Skipped if you are using the provided VM)
@@ -40,8 +42,11 @@ Then you can called `autofz --help` to verify whether you install successfully.
 
 
 ## Before running
-- Make sure your uid in the host is `2000`, which is the same as the user in the docker container.
+Make sure your uid in the host is `2000`, which is the same as the user in the docker container.
   - We use this trick to prevent from using `sudo` and make the mounted volumn can be read outside of docker.
+
+It's not mandatory. If you don't do that, you might need to use `sudo` to bypass some permission issues.
+
 
 ## Running
 ### Init
@@ -77,12 +82,11 @@ Note that `/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` might not exis
 sysctl -w fs.inotify.max_user_instances=8192
 sysctl -w fs.inotify.max_user_watches=524288
 ```
-To make it persitent between reboot; add the following lines to `/etc/sysctl.conf`.
+To make it persistent between reboot; add the following lines to `/etc/sysctl.conf`.
 ```
 fs.inotify.max_user_instances=8192
 fs.inotify.max_user_watches=524288
 ```
-
 
 ### Fuzzing ###
 All the evaluation is run by `autofz` framework.
@@ -105,7 +109,7 @@ autofz -o output -T 30m -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
 ```
 
 
-#### EnFuzz/CUPID ####
+#### EnFuzz/CUPID/autofz- ####
 
 For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM`.
 
@@ -161,17 +165,8 @@ output
 ### aflforkserver.so
 It is built from [quickcov](https://github.com/egueler/quickcov), which is a part of CUPID.
 
-
-## Reference
-- [ENFUZZ](https://github.com/enfuzz/enfuzz)
-- [CUPID](https://github.com/RUB-SysSec/cupid)
-- [quickcov](https://github.com/egueler/quickcov)
-- [collabfuzz](https://github.com/vusec/collabfuzz)
-- [UNIFUZZ](https://github.com/unifuzz)
-- [fuzzer test suite](https://github.com/google/fuzzer-test-suite)
-
-Thanks above projects for open sourcing their code.
-
+## Output Post Processing by afl-cov
+TODO
 
 ## VM Setup ###
 
@@ -192,7 +187,7 @@ See above.
 #### Example Output Result
 `/home/autofz/output_exiv2` is the sample output after 24 hours fuzzing of autofz.
 
-### Build docker image
+## Build docker image
 TODO
 
 ## Extend
@@ -204,3 +199,14 @@ TODO
 ### How to add a target
 - build the target for each baseline fuzzer
 - add it to `config.py`
+
+## Reference
+- [ENFUZZ](https://github.com/enfuzz/enfuzz)
+- [CUPID](https://github.com/RUB-SysSec/cupid)
+- [quickcov](https://github.com/egueler/quickcov)
+- [collabfuzz](https://github.com/vusec/collabfuzz)
+- [UNIFUZZ](https://github.com/unifuzz)
+- [fuzzer test suite](https://github.com/google/fuzzer-test-suite)
+- [afl-cov](https://github.com/mrash/afl-cov)
+
+Thanks above projects for open sourcing their code.
