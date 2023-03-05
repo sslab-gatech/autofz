@@ -1,0 +1,27 @@
+### Emacs ###
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Persistent undo
+**/*.~undo-tree~
+
+# mypy
+**/.mypy_cache/
+.dmypy.json
+dmypy.json
+
+### macOS ###
+# General
+**/.DS_Store
+.AppleDouble
+.LSOverride

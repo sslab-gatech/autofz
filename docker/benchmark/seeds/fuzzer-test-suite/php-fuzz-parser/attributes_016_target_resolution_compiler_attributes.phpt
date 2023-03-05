@@ -1,0 +1,5 @@
+<?php
+
+<<ZendTestAttribute>>
+function foo() {
+}
