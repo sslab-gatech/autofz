@@ -9,7 +9,7 @@ Some part of the source code might use `autofuzz` (which is the old name of `aut
 
 We provided the following for artifact evaluation:
 - A pre-built docker image which includes all baseline fuzzers and benchmarks used in the paper.
-- A VM that configures all necessary things and can be used to luanch the docker containers. If you want to use the VM, plase jump to [VM setup section](#vm-setup).
+- A VM that configures all necessary things and can be used to launch the docker containers. If you want to use the VM, please jump to [VM setup section](#vm-setup).
 
 ## Directory Structure
 - `autofz`: main directory for autofz framework
@@ -20,17 +20,18 @@ We provided the following for artifact evaluation:
       - arguments for each benchmark
     - `evaluator.py`: the thread calculating AFL bitmap for each baseline fuzzer
     - `aflforkserver.so`: from quickcov component of CUPID, used to get AFL bitmap coverage.
-    - `wather.py`: Inotify handler for new files in fuzzer directores, modify from CollabFuzz
+    - `wather.py`: Inotify handler for new files in fuzzer directories, modify from CollabFuzz
     - `fuzzer_driver`: directory for fuzzer API implementations
-        - `main.py`: entrypoint of fuzzer driver
-        - `afl.py`: AFL-based fuzzers, same for other files
-- `afl-cov`: modifed from [original afl-cov](https://github.com/mrash/afl-cov) to do post-processing on fuzzing output to get line/branch (edge) coverage over time.
+        - `main.py`: entry-point of fuzzer driver
+            - `afl.py`: AFL-based fuzzers, same for other files
+- `afl-cov`: modified from [original afl-cov](https://github.com/mrash/afl-cov) to do post-processing on fuzzing output to get line/branch (edge) coverage over time.
 
 
 ## Installing (Skipped if you are using the provided VM)
 
 ### required system packages
-Please refer to the `Dockerfile`.
+- `docker`
+- `docker-compose`
 
 ### autofz
 `cd` into the directory containing `setup.py`
@@ -43,14 +44,14 @@ Then you can called `autofz --help` to verify whether you install successfully.
 
 ## Before running
 Make sure your uid in the host is `2000`, which is the same as the user in the docker container.
-  - We use this trick to prevent from using `sudo` and make the mounted volumn can be read outside of docker.
+  - We use this trick to prevent from using `sudo` and make the mounted volume can be read outside of docker.
 
 It's not mandatory. If you don't do that, you might need to use `sudo` to bypass some permission issues.
 
 
 ## Running
 ### Init
-After entering the docker container, run the following commands; it will setup necessary paramters for fuzzing and create the cgroups.
+After entering the docker container, run the following commands; it will setup necessary parameters for fuzzing and create the cgroups.
 ```sh
 sudo /init.sh
 ```
@@ -93,7 +94,7 @@ All the evaluation is run by `autofz` framework.
 
 #### autofz ####
 
-For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM`.
+For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers).
 
 ##### Single-core implementation #####
 
@@ -103,7 +104,7 @@ autofz -o output -T 30m -f afl fairfuzz aflfast qsym -t exiv2
 
 ##### Multi-core implementation #####
 
-For multi-core implementaiton, we need to specify CPUs/jobs (by `-j`) and `-p` (shorthand for `--parallel`).
+For multi-core implementation, we need to specify CPUs/jobs (by `-j`) and `-p` (shorthand for `--parallel`).
 ```sh
 autofz -o output -T 30m -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
 ```
@@ -113,7 +114,7 @@ autofz -o output -T 30m -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
 
 For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM`.
 
-Additionally, you can specifiy how many CPUs/jobs by `-j` arguments; here we use 4 CPUs (one for each fuzzer).
+Additionally, you can specify how many CPUs/jobs by `-j` arguments; here we use 4 CPUs (one for each fuzzer).
 
 <!-- Note that by specifiying `-j` other than 1, we use the multi-core implemention. -->
 
@@ -174,7 +175,7 @@ TODO
 2. Download and import the OVA files
    - [OVA URL](https://TBD)
 3. Start the VM, the credential is `autofz:autofz`
-   - SSH is installed, and you need to configure VirtualBox network first to ssh into the VM. Port forwarding would be the easiet way.
+   - SSH is installed, and you need to configure VirtualBox network first to ssh into the VM. Port forwarding would be the easiest way.
 4. All the data will in the home directory
 
 #### Resource
@@ -187,26 +188,103 @@ See above.
 #### Example Output Result
 `/home/autofz/output_exiv2` is the sample output after 24 hours fuzzing of autofz.
 
-## Build docker image
-TODO
+
+## Fuzzing using docker image on the host
+Example
+```
+autofz.sh run --rm -v `pwd`:/work/autofz -w /work/autofz autofz -o output -t exiv2 -f all -T 24h
+```
+
+
+
+## Docker image
+Pre-built docker image:
+```
+docker pull fuyu0425/autofz
+docekr tag fuyu0425/autofz autofz
+```
+
+### Build docker image
+We have built the docker image for you, but you want to build it by yourself; here is the process.
+
+First build baseline fuzzers and benchmarks.
+
+```
+./docker/build.sh
+```
+
+Then, build the all-in-one docker including `autofz` and all the fuzzers/benchmarks.
+
+```
+./build.sh
+```
+
+You can tune the image name/tag in these `build.sh`.
+
+You might need to tune `_UID` and `GID` (they are hard-coded to `2000` when building the pre-built image) in `build.sh` to bypass docker volume permission issue if you don't want to use root user.
+
+
+
+#### Build Note/Warning
+
+The build script parallels the compilation process a lot by making the jobs runs in the background (by inserting `&` at the end of shell commands). It will takes a lot of CPU and RAM (especially during linking). Please remove `&` in build scripts (`build.sh` or `build_all.sh` under `docker/benchmark`) when you are building under less performant machines.
 
 ## Extend
+Please look at the content of [config.py][./autofz/config.py] first; it has some comments.
 
 ### How to add a baseline fuzzer
 - build the fuzzer
-- add it to `config.py`
+- add it to `config.py` under `Config['fuzzer']`
+
+#### Add the necessary group code in autofz
+- implement fuzzer API/driver under `autofz/fuzzer_driver` directories.
+  - Only Start/Pause/Resume/Stop APIs are needed in single-core (default) mode.
+  - Please take a look at `autofz/fuzzer_driver/afl.py` as a reference.
+  - You might need to add some code in`autofz/fuzzer_driver/db.py` and `autofz/fuzzer_driver/main.py` too.
+- add fuzzer to `autofz/mytypy.py`.
+- add fuzzer to `autofz/watcher.py`.
 
 ### How to add a target
 - build the target for each baseline fuzzer
-- add it to `config.py`
+- add it to `config.py`  under `Config['target']`
+
+### Reinstall after changing `config.py`
+After modifying `config.py`, you need to do `pip install` again.
+
+decoupling `config.py` is on the roadmap.
 
 ## Reference
+
+### Fuzzers
+- [AFL](https://github.com/google/AFL)
+- [AFLFast](https://github.com/mboehme/aflfast)
+- [AFL++](https://github.com/AFLplusplus/AFLplusplus)
+- [Angora](https://github.com/AngoraFuzzer/Angora)
+- [FairFuzz](https://github.com/carolemieux/afl-rb)
+- [LAF-Intel](https://lafintel.wordpress.com/)
+  - AFL++ version is used
+- [LearnAFL](https://github.com/MoonLight-SteinsGate/LearnAFL)
+- [LibFuzzer](https://github.com/carolemieux/afl-rb)
+  - [patched version](https://github.com/phi-go/llvm-project) from CUPID team to enable seed sync
+- [MOpt](https://github.com/puppet-meteor/MOpt-AFL)
+- [QSYM](https://github.com/sslab-gatech/qsym)
+- [Radamsa](https://gitlab.com/akihe/radamsa)
+  - AFL++ version with custom mutators is used
+- [RedQueen](https://github.com/RUB-SysSec/redqueen)
+  - AFL++ version is used
+
+
+### Collaborative fuzzing
 - [ENFUZZ](https://github.com/enfuzz/enfuzz)
 - [CUPID](https://github.com/RUB-SysSec/cupid)
-- [quickcov](https://github.com/egueler/quickcov)
 - [collabfuzz](https://github.com/vusec/collabfuzz)
+
+### Benchmarks
 - [UNIFUZZ](https://github.com/unifuzz)
-- [fuzzer test suite](https://github.com/google/fuzzer-test-suite)
+- [Fuzzer Test Suite](https://github.com/google/fuzzer-test-suite)
+
+### Coverage tools
+- [quickcov](https://github.com/egueler/quickcov)
 - [afl-cov](https://github.com/mrash/afl-cov)
 
 Thanks above projects for open sourcing their code.

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+config file for autofz
+'''
 import os
 import sys
 import tempfile
@@ -13,7 +16,9 @@ if not __package__:
 INPUT_DIR = 'queue'
 CRASH_DIR = 'crashes'
 
-CONFIG_NORMAL: Dict = {
+# NOTE: you can define your own config
+CONFIG: Dict = {
+    # these will be default parameters for cli.py
     'scheduler': {
         'prep_time': 300,
         'focus_time': 300,
@@ -21,21 +26,27 @@ CONFIG_NORMAL: Dict = {
         'sync_time': 300,
         'timeout': '24h'
     },
+    # unused now
     'docker': {
         'root_dir': '/work/autofz',
         'network': 'autofz'
     },
+    # binary directories for AFL-compiled binaries
+    # justafl is used to get AFL bitmap
+    # aflasan is used to triage crashes/bugs
     'evaluator': {
         'binary_root': '/d/p/justafl',
         'binary_crash_root': '/d/p/aflasan',
     },
+    # only specify basic things
+    # how to launch fuzzers with proper arguments is handled by fuzzer driver
     'fuzzer': {
         'afl': {
-            'input_dir': INPUT_DIR,
+            'input_dir': INPUT_DIR, # queue dir
             'crash_dir': CRASH_DIR,
             'skip_crash_file': ['README.txt'],
-            'command': '/fuzzer/afl/afl-fuzz',
-            'target_root': '/d/p/justafl',
+            'command': '/fuzzer/afl/afl-fuzz', # fuzzer binary path
+            'target_root': '/d/p/justafl', # which binary is used to fuzz
             'afl_based': True,
         },
         'aflfast': {
@@ -123,6 +134,7 @@ CONFIG_NORMAL: Dict = {
             'afl_based': False
         }
     },
+    # each target has a group like unibench/fuzzer-test-suite
     'target': {
         'exiv2': {
             'group': 'unibench',
@@ -130,10 +142,12 @@ CONFIG_NORMAL: Dict = {
             'code_dir': 'unibench/exiv2-0.26',
             'input_model': 'jpeg.xml',
             'dict': 'jpeg.dict',
+            # default is AFL-style (@@ for input file)
             'args': {
                 'default': '@@',
             },
-            'mem_limit': 8192,
+            # fuzzers that do not support this target.
+            # autofz will do some sanity check when started.
             'unsupported': ['libfuzzer']
         },
         'gdk-pixbuf-pixdata': {
@@ -208,7 +222,6 @@ CONFIG_NORMAL: Dict = {
             'args': {
                 'default': '-o /dev/null @@',
             },
-            'mem_limit': 8192,
             'unsupported': ['libfuzzer', 'angora']
         },
         'ffmpeg': {
@@ -219,7 +232,6 @@ CONFIG_NORMAL: Dict = {
             'args': {
                 'default': '-y -i @@ -c:v mpeg4 -c:a copy -f mp4 /dev/null',
             },
-            'mem_limit': 8192,
             'unsupported': ['libfuzzer']
         },
         'flvmeta': {
@@ -287,7 +299,6 @@ CONFIG_NORMAL: Dict = {
             'args': {
                 'default': '@@ /dev/null',
             },
-            'mem_limit': 8192,
             'unsupported': ['libfuzzer']
         },
         'sqlite3': {
@@ -330,42 +341,6 @@ CONFIG_NORMAL: Dict = {
             'code_dir': 'unibench/libpcap-1.8.1',
             'args': {
                 'default': '-e -vv -nr @@',
-            },
-            'unsupported': ['libfuzzer']
-        },
-        'base64': {
-            'group': 'lava',
-            'seed': '/seeds/lava/base64',
-            'code_dir': 'lava_corpus/LAVA-M/base64',
-            'args': {
-                'default': '-d @@'
-            },
-            'unsupported': ['libfuzzer']
-        },
-        'md5sum': {
-            'group': 'lava',
-            'seed': '/seeds/lava/md5sum',
-            'code_dir': 'lava_corpus/LAVA-M/md5sum',
-            'args': {
-                'default': '-c @@'
-            },
-            'unsupported': ['libfuzzer']
-        },
-        'uniq': {
-            'group': 'lava',
-            'seed': '/seeds/lava/uniq',
-            'code_dir': 'lava_corpus/LAVA-M/uniq',
-            'args': {
-                'default': '@@'
-            },
-            'unsupported': ['libfuzzer']
-        },
-        'who': {
-            'group': 'lava',
-            'seed': '/seeds/lava/who',
-            'code_dir': 'lava_corpus/LAVA-M/who',
-            'args': {
-                'default': '@@'
             },
             'unsupported': ['libfuzzer']
         },
@@ -602,12 +577,10 @@ FUZZERS = [
     'radamsa', 'qsym', 'angora', 'libfuzzer'
 ]
 
+# Used by fuzz driver
+
 AFL_MASTER_STR = 'afl-master'
 AFL_SLAVE_STR = 'afl-slave'
 
 # Use different directories every run
 DATABASE_DIR = tempfile.mkdtemp()
-
-CONFIG = CONFIG_NORMAL
-
-# NOTE: you can define your own config
