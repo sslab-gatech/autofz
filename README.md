@@ -1,5 +1,5 @@
 # autofz
-[![Docker Pulls](https://img.shields.io/docker/pulls/fuyu0425/autofz)](https://hub.docker.com/r/fuyu0425/autofz)
+[![Docker Pulls](https://img.shields.io/docker/pulls/fuyu0425/autofz)](https://hub.docker.com/r/fuyu0425/autofz) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7701474.svg)](https://doi.org/10.5281/zenodo.7701474)
 
 autofz is a meta fuzzer for automated fuzzer composition at runtime.
 
@@ -199,7 +199,7 @@ libraries in most programming languages.
 
 To inspect the log file (e.g. `exiv2.json`), we recommend using a tool called
 [jq](https://github.com/stedolan/jq), which can be installed by the
-package manager in most Linux distribution. We already installed in both the
+package manager in most Linux distributions. We already installed it in both the
 docker image and the VM image.
 
 There are many fields in the log file.
