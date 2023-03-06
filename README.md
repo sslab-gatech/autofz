@@ -33,23 +33,55 @@ We provided the following for artifact evaluation:
 - `docker`
 - `docker-compose`
 
-### autofz
-`cd` into the directory containing `setup.py`
+<!-- ### autofz -->
+<!-- `cd` into the directory containing `setup.py` -->
+<!-- ```sh -->
+<!-- pip install . -->
+<!-- ``` -->
+
+<!-- Then you can called `autofz --help` to verify whether you install successfully. -->
+
+### Pull docker image
 ```sh
-pip install .
+docker pull fuyu0425/autofz
+docker tag fuyu0425/autofz autofz
 ```
 
-Then you can called `autofz --help` to verify whether you install successfully.
-
-
 ## Before running
+### UID check
 Make sure your uid in the host is `2000`, which is the same as the user in the docker container.
   - We use this trick to prevent from using `sudo` and make the mounted volume can be read outside of docker.
 
 It's not mandatory. If you don't do that, you might need to use `sudo` to bypass some permission issues.
 
 
+### Increase inotify limits
+```sh
+sysctl -w fs.inotify.max_user_instances=8192
+sysctl -w fs.inotify.max_user_watches=524288
+```
+To make it persistent between reboot; add the following lines to `/etc/sysctl.conf` on the host.
+```
+fs.inotify.max_user_instances=8192
+fs.inotify.max_user_watches=524288
+```
+
 ## Running
+### Launching a docker container
+```sh
+docker run --rm --privileged -it autofz /bin/bash
+```
+Note that, the result is not preserved. To preserve the fuzzing output, we need
+to mount a docker volume.
+
+```sh
+docker run --rm --privileged -v $PWD:/work/autofz -w /work/autofz -it autofz /bin/bash
+```
+This command mount (by `-v`) your current directory (`$PWD`) to `/work/autofz` in the container and change the working directory to `/work/autofz` (by `-w`).
+
+Afterward, make sure the fuzzing output directory is under `/work/autofz` and it will be preserved under your `$PWD`.
+
+
 ### Init
 After entering the docker container, run the following commands; it will setup necessary parameters for fuzzing and create the cgroups.
 ```sh
@@ -78,23 +110,13 @@ cgcreate -t autofz -a autofz -g cpu:/autofz
 Note that `/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` might not exist in VM; just ignore that error.
 
 
-### Increase inotify limits
-```sh
-sysctl -w fs.inotify.max_user_instances=8192
-sysctl -w fs.inotify.max_user_watches=524288
-```
-To make it persistent between reboot; add the following lines to `/etc/sysctl.conf`.
-```
-fs.inotify.max_user_instances=8192
-fs.inotify.max_user_watches=524288
-```
-
 ### Fuzzing ###
 All the evaluation is run by `autofz` framework.
+Please refer to [cli.py](./autofz/cli.py) for all possible arguments.
 
 #### autofz ####
 
-For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers).
+For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers, which is the one we used in the evaluation). `-T` for the timeout.
 
 ##### Single-core implementation #####
 
@@ -108,6 +130,12 @@ For multi-core implementation, we need to specify CPUs/jobs (by `-j`) and `-p` (
 ```sh
 autofz -o output -T 30m -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
 ```
+
+##### Tuning the parameter of two-phase algorithm.
+- `--prep`: prepration time (default: 300)
+- `--focus`: focus time (default: 300)
+- `--diff_threshold`: initial threshold (default: 100)
+- the default values are used in the paper.
 
 
 #### EnFuzz/CUPID/autofz- ####
@@ -123,7 +151,7 @@ It is recommended to use at least the same number of CPUs as the number of fuzze
 Finally, enable EnFuzz mode by `--enfuzz ${SYNC_TIME}`; it specifies the time interval for seed synchronization.
 
 ```sh
-autofz -o output -T 30m -f afl fairfuzz aflfast qsym -j4 -t exiv2 --enfuzz 300
+autofz -o output -T 30m -f afl fairfuzz aflfast qsym -p -j4 -t exiv2 --enfuzz 300
 ```
 The fuzzing result reside in `output` (by specifying `-o`).
 
@@ -162,18 +190,79 @@ output
 - `unique_bugs_*`: deduplicated bugs by `ip` (instruction pointer), `trace` (whole stack traces), `trace3` (top 3 stack frame).
 
 
-
 ### aflforkserver.so
 It is built from [quickcov](https://github.com/egueler/quickcov), which is a part of CUPID.
 
+## Inspect log files of autofz
+The log file of `autofz` is in JSON format and can be easily parsed by standard
+libraries in most programming languages.
+
+To inspect the log file (e.g. `exiv2.json`), we recommend using a tool called
+[jq](https://github.com/stedolan/jq), which can be installed by the
+package manager in most Linux distribution. We already installed in both the
+docker image and the VM image.
+
+There are many fields in the log file.
+
+One of them is `log`, which can be retrieved by the following command.
+
+```sh
+jq .log exiv2.json
+```
+
+The output is an array and each element of the array contains the coverage
+(`bitmap` field) and
+unique bugs information and the timestamp for that record. By default, a new log
+entry in appended for every 60 seconds.
+
+To get the results based on rounds, we can use the following commands.
+
+```sh
+jq .round exiv2.json
+```
+
+The output is also an array and each element is the result of one round.
+
+Each element records information for different phases in one round (e.g. the
+coverage before/after preparation/focus phases, resource allocation metadata and
+current difference threshold.)
+
+In the provided VM, we provided one of the fuzzing log with the path
+
+`/home/autofz/output_exiv2/exiv2.json`.
+
+
 ## Output Post Processing by afl-cov
-TODO
+We use `exiv2` as an exmaple.
+```sh
+afl-cov --output output \
+        -d output/exiv2 \
+        -t queue \
+        --input /seeds/unibench/general_evaluation/jpg \
+        --coverage-cmd='/d/p/cov/unibench/exiv2/exiv2 @@' \
+        --code-dir /autofz_bench/unibench/exiv2-0.26 \
+        -T 1s \
+        --cover-corpus \
+        --disable-lcov-web \
+        --ignore-core-pattern --overwrite --enable-branch-coverage
+```
+- Please use `afl-cov --help` to see the meaning of argument definition.
+- `output/exiv2` is the raw fuzzing output directory. Note that `output` is the root of fuzzing output directory.
+- `queue` is directory name to find the queue directory of fuzzers. It can only support one name now.
+- `/seeds/unibench/general_evaluation/jpg` is the seeds to fuzz `exiv2`.
+- `/d/p/cov/unibench/exiv2/exiv2` is binary compiled with coverage support. Please check [`docker/benchmark/coverage/Dockerfile`](./docker/benchmark/coverage/Dockerfile).
+- `/autofz_bench/unibench/exiv2-0.26`: source code directory for `exiv2`, it is required to get line/branch coverage.
+- `--output ouput`, it will create a `cov` directory under `output`.
+- afl-cov will store the log under `output/cov/cov.json`. It has the similiar structure as the log of `autofz`.
+
+
+
 
 ## VM Setup ###
 
 1. Download the VirtualBox and install the Oracle Extension Pack
 2. Download and import the OVA files
-   - [OVA URL](https://TBD)
+   - [OVA URL](https://doi.org/10.5281/zenodo.7701474)
 3. Start the VM, the credential is `autofz:autofz`
    - SSH is installed, and you need to configure VirtualBox network first to ssh into the VM. Port forwarding would be the easiest way.
 4. All the data will in the home directory
@@ -230,7 +319,7 @@ You might need to tune `_UID` and `GID` (they are hard-coded to `2000` when buil
 The build script parallels the compilation process a lot by making the jobs runs in the background (by inserting `&` at the end of shell commands). It will takes a lot of CPU and RAM (especially during linking). Please remove `&` in build scripts (`build.sh` or `build_all.sh` under `docker/benchmark`) when you are building under less performant machines.
 
 ## Extend
-Please look at the content of [config.py][./autofz/config.py] first; it has some comments.
+Please look at the content of [config.py](./autofz/config.py) first; it has some comments.
 
 ### How to add a baseline fuzzer
 - build the fuzzer
@@ -265,7 +354,7 @@ decoupling `config.py` is on the roadmap.
   - AFL++ version is used
 - [LearnAFL](https://github.com/MoonLight-SteinsGate/LearnAFL)
 - [LibFuzzer](https://github.com/carolemieux/afl-rb)
-  - [patched version](https://github.com/phi-go/llvm-project) from CUPID team to enable seed sync
+  - [patched version](https://github.com/phi-go/llvm-project/tree/fuzzer_sync) from CUPID team to enable seed sync
 - [MOpt](https://github.com/puppet-meteor/MOpt-AFL)
 - [QSYM](https://github.com/sslab-gatech/qsym)
 - [Radamsa](https://gitlab.com/akihe/radamsa)
