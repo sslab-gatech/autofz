@@ -116,24 +116,26 @@ Please refer to [cli.py](./autofz/cli.py) for all possible arguments.
 
 #### autofz ####
 
-For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers, which is the one we used in the evaluation). `-T` for the timeout.
+For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers, which is the one we used in the evaluation). `-T` for the timeout (human friendly foramt like `1d`, `24h` or `30m`).
+
+The fuzzing result reside in `output` (by specifying `-o`).
 
 ##### Single-core implementation #####
 
 ```sh
-autofz -o output -T 30m -f afl fairfuzz aflfast qsym -t exiv2
+autofz -o output -T 24h -f afl fairfuzz aflfast qsym -t exiv2
 ```
 
 ##### Multi-core implementation #####
 
 For multi-core implementation, we need to specify CPUs/jobs (by `-j`) and `-p` (shorthand for `--parallel`).
 ```sh
-autofz -o output -T 30m -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
+autofz -o output -T 24h -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
 ```
 
 ##### Tuning the parameter of two-phase algorithm.
-- `--prep`: prepration time (default: 300)
-- `--focus`: focus time (default: 300)
+- `--prep`: prepration time (in seconds) (default: 300)
+- `--focus`: focus time (in seconds) (default: 300)
 - `--diff_threshold`: initial threshold (default: 100)
 - the default values are used in the paper.
 
@@ -148,19 +150,18 @@ Additionally, you can specify how many CPUs/jobs by `-j` arguments; here we use 
 
 It is recommended to use at least the same number of CPUs as the number of fuzzers to prevent resource competition.
 
-Finally, enable EnFuzz mode by `--enfuzz ${SYNC_TIME}`; it specifies the time interval for seed synchronization.
+Finally, enable EnFuzz mode by `--enfuzz ${SYNC_TIME}`; it specifies the time interval (in seconds) for seed synchronization.
 
 ```sh
-autofz -o output -T 30m -f afl fairfuzz aflfast qsym -p -j4 -t exiv2 --enfuzz 300
+autofz -o output -T 24h -f afl fairfuzz aflfast qsym -p -j4 -t exiv2 --enfuzz 300
 ```
-The fuzzing result reside in `output` (by specifying `-o`).
 
 
 #### Run a single fuzzer ####
 
 For example, AFL only by specifying `--focus-one`.
 ```sh
-autofz -o output -T 30m -f afl -t exiv2 --focus-one afl
+autofz -o output -T 24h -f afl -t exiv2 --focus-one afl
 ```
 
 #### Example output result ####
@@ -213,7 +214,7 @@ jq .log exiv2.json
 The output is an array and each element of the array contains the coverage
 (`bitmap` field) and
 unique bugs information and the timestamp for that record. By default, a new log
-entry in appended for every 60 seconds.
+entry is appended for every 60 seconds.
 
 To get the results based on rounds, we can use the following commands.
 
@@ -247,16 +248,14 @@ afl-cov --output output \
         --ignore-core-pattern --overwrite --enable-branch-coverage
 ```
 - Please use `afl-cov --help` to see the meaning of argument definition.
-- `output/exiv2` is the raw fuzzing output directory. Note that `output` is the root of fuzzing output directory.
+- `output/exiv2` is the raw fuzzing output directory of baseline fuzzers.
+Note that `output` is the root of fuzzing output directory of `autofz`. 
 - `queue` is directory name to find the queue directory of fuzzers. It can only support one name now.
 - `/seeds/unibench/general_evaluation/jpg` is the seeds to fuzz `exiv2`.
 - `/d/p/cov/unibench/exiv2/exiv2` is binary compiled with coverage support. Please check [`docker/benchmark/coverage/Dockerfile`](./docker/benchmark/coverage/Dockerfile).
 - `/autofz_bench/unibench/exiv2-0.26`: source code directory for `exiv2`, it is required to get line/branch coverage.
 - `--output ouput`, it will create a `cov` directory under `output`.
 - afl-cov will store the log under `output/cov/cov.json`. It has the similiar structure as the log of `autofz`.
-
-
-
 
 ## VM Setup ###
 
@@ -272,7 +271,7 @@ afl-cov --output output \
 - RAM: 8GM (really depends on the chosen fuzzers and target you want to fuzz, autofz itself takes few memory.)
 
 #### How to run
-See above.
+See [running](#running) section.
 
 #### Example Output Result
 `/home/autofz/output_exiv2` is the sample output after 24 hours fuzzing of autofz.
