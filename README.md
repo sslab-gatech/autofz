@@ -109,6 +109,16 @@ cgcreate -t autofz -a autofz -g cpu:/autofz
 
 Note that `/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` might not exist in VM; just ignore that error.
 
+#### Security implication
+Docker share the same kernel with the host, and we disable some security feature of kernel (e.g. ASLR through `/proc/sys/kernel/randomize_va_space`) for fuzzing.
+
+Please run it carefully; better in VM.
+
+#### Cgroups V2
+For a system that is using cgroup v2, a manual downgrade to v1 is necessary. This can be done by adding `systemd.unified_cgroup_hierarchy=0` to the kernel command line (e.g., via /etc/default/grub).
+
+Thanks for the anonymous reviewers for suggestion.
+
 
 ### Fuzzing ###
 All the evaluation is run by `autofz` framework.
@@ -249,7 +259,7 @@ afl-cov --output output \
 ```
 - Please use `afl-cov --help` to see the meaning of argument definition.
 - `output/exiv2` is the raw fuzzing output directory of baseline fuzzers.
-Note that `output` is the root of fuzzing output directory of `autofz`. 
+Note that `output` is the root of fuzzing output directory of `autofz`.
 - `queue` is directory name to find the queue directory of fuzzers. It can only support one name now.
 - `/seeds/unibench/general_evaluation/jpg` is the seeds to fuzz `exiv2`.
 - `/d/p/cov/unibench/exiv2/exiv2` is binary compiled with coverage support. Please check [`docker/benchmark/coverage/Dockerfile`](./docker/benchmark/coverage/Dockerfile).
