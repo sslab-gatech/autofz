@@ -1315,7 +1315,9 @@ class Schedule_Autofz(Schedule_Base):
     def pre_run(self) -> bool:
         logger.info(f"{self.name}: pre_run")
         logger.info(f'diff_threshold {self.diff_threshold}')
+        self.reset_bitmap_contribution()
         for fuzzer in self.fuzzers:
+            self.all_bitmap_contribution[fuzzer] = Bitmap.empty()
             self.picked_times[fuzzer] = 0
         return True
 
