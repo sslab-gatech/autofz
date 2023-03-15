@@ -149,6 +149,7 @@ COPY init.sh /
 COPY afl-cov/ /afl-cov
 
 COPY autofz/ /autofz/autofz
+COPY draw/   /autofz/draw
 COPY setup.py  /autofz/
 COPY requirements.txt  /autofz/
 

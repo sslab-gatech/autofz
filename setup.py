@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 import os
 
 # packages = find_packages()
-packages = ['autofz', 'autofz.fuzzer_driver']
+packages = ['autofz', 'autofz.fuzzer_driver', 'draw']
 
 # https://github.com/google-research/arxiv-latex-cleaner/blob/main/setup.py
 
@@ -24,7 +24,8 @@ setup(
     author_email="yufu@gatech.edu",
     install_requires=install_requires,
     entry_points={
-        'console_scripts': ['autofz = autofz.main:main'],
+        'console_scripts': ['autofz = autofz.main:main',
+                            'autofz-draw = draw.draw_main:main'],
     },
     package_data={'autofz': ['aflforkserver.so']},
     python_requires=">=3.9.4",
