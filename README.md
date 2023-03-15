@@ -43,8 +43,8 @@ We provided the following for artifact evaluation:
 
 ### Pull docker image
 ```sh
-docker pull fuyu0425/autofz
-docker tag fuyu0425/autofz autofz
+docker pull fuyu0425/autofz:v1.0.0
+docker tag fuyu0425/autofz:v1.0.0 autofz
 ```
 Please check https://hub.docker.com/repository/docker/fuyu0425/autofz/tags for possible tags. Default is `latest`. We will tag the final artifact version as `v1.0.0` after artifact evaluation.
 
@@ -320,8 +320,8 @@ autofz.sh run --rm -v `pwd`:/work/autofz -w /work/autofz autofz -o output -t exi
 ## Docker image
 Pre-built docker image:
 ```
-docker pull fuyu0425/autofz
-docekr tag fuyu0425/autofz autofz
+docker pull fuyu0425/autofz:v1.0.0
+docekr tag fuyu0425/autofz:v1.0.0 autofz
 ```
 
 ### Build docker image
