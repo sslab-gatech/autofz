@@ -1175,6 +1175,8 @@ class Schedule_Autofz(Schedule_Base):
         prep_fuzzers = self.fuzzers
         self.prep_fuzzers = prep_fuzzers
 
+        logger.info(f'round {self.round_num} preparation phase')
+
         if PARALLEL:
             has_winner = self.prep_parallel()
         else:
@@ -1234,6 +1236,7 @@ class Schedule_Autofz(Schedule_Base):
         find_new = False
         focus_start_time = time.time()
 
+        logger.info(f'round {self.round_num} focus phase')
         # NOTE: focus phase
         if PARALLEL:
             find_new = self.focus_cpu_assign_parallel(
