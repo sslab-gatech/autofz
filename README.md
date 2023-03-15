@@ -1,5 +1,5 @@
 # autofz
-[![Docker Pulls](https://img.shields.io/docker/pulls/fuyu0425/autofz)](https://hub.docker.com/r/fuyu0425/autofz) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7701474.svg)](https://doi.org/10.5281/zenodo.7701474)
+[![Docker Pulls](https://img.shields.io/docker/pulls/fuyu0425/autofz)](https://hub.docker.com/r/fuyu0425/autofz) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7738458.svg)](https://doi.org/10.5281/zenodo.7738458)
 
 autofz is a meta fuzzer for automated fuzzer composition at runtime.
 
@@ -258,7 +258,7 @@ Above commands is used to draw figure 3 in the paper but only for `exiv2`.
   - `-t fts`: all FTS targets
 - `-d`: specifying the experiment directories; the script will scan all json log files of `autofz`.
   - scanning log files is time consuming, make sure that you don't have unrelated files in the directories.
-  - recommended way is to create a new directory and symbolic link all the fuzzing output directory into it.
+  - recommended way is to create a new directory and symbolic link all the fuzzing output directory (or just json files) into it.
 - `-T`: specify the timeout; log files without enough fuzzing time will be excluded.
 - `--pdf`/`--svg`: output pdf/svg. default is jpg.
 - `--ci`: draw confidence interval; default is 97 for 97% confidence interval.
@@ -293,7 +293,7 @@ Note that `output` is the root of fuzzing output directory of `autofz`.
 
 1. Download the VirtualBox and install the Oracle Extension Pack
 2. Download and import the OVA files
-   - [OVA URL](https://doi.org/10.5281/zenodo.7701474)
+   - [OVA URL](https://doi.org/10.5281/zenodo.7738458)
 3. Start the VM, the credential is `autofz:autofz`
    - SSH is installed, and you need to configure VirtualBox network first to ssh into the VM. Port forwarding would be the easiest way.
 4. All the data will in the home directory
