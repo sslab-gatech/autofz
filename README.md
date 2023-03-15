@@ -46,6 +46,7 @@ We provided the following for artifact evaluation:
 docker pull fuyu0425/autofz
 docker tag fuyu0425/autofz autofz
 ```
+Please check https://hub.docker.com/repository/docker/fuyu0425/autofz/tags for possible tags. Default is `latest`. We will tag the final artifact version as `v1.0.0` after artifact evaluation.
 
 ## Before running
 ### UID check
@@ -126,7 +127,7 @@ Please refer to [cli.py](./autofz/cli.py) for all possible arguments.
 
 #### autofz ####
 
-For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers, which is the one we used in the evaluation). `-T` for the timeout (human friendly foramt like `1d`, `24h` or `30m`).
+For example, we want to fuzz `exiv2` (by `-t`) using 4 fuzzers by `-f`: `AFL`, `FairFuzz`, `AFLFast`, `QSYM` (`-f all` to use all baseline fuzzers, which is the one we used in the evaluation). `-T` for the timeout (human friendly format like `1d`, `24h` or `30m`).
 
 The fuzzing result reside in `output` (by specifying `-o`).
 
@@ -144,7 +145,7 @@ autofz -o output -T 24h -f afl fairfuzz aflfast qsym -j4 -p -t exiv2
 ```
 
 ##### Tuning the parameter of two-phase algorithm.
-- `--prep`: prepration time (in seconds) (default: 300)
+- `--prep`: preparation time (in seconds) (default: 300)
 - `--focus`: focus time (in seconds) (default: 300)
 - `--diff_threshold`: initial threshold (default: 100)
 - the default values are used in the paper.
@@ -242,9 +243,30 @@ In the provided VM, we provided one of the fuzzing log with the path
 
 `/home/autofz/output_exiv2/exiv2.json`.
 
+## Plotting the result
+`autofz-draw --help` for the argument description of drawing scripts.
+
+```sh
+autofz-draw -o output-draw -t exiv2 -d exp -T 24h --pdf
+```
+Above commands is used to draw figure 3 in the paper but only for `exiv2`.
+- `-o`: setting the drawing output directories
+  - result will be in `output-draw/growth_24h_bitmap-density/overview.pdf`
+- `-t`: setting the target binaries, you can specify multiples targets here
+  - `-t all`: all targets in figure 3
+  - `-t unifuzz`: all UNIFUZZ targets
+  - `-t fts`: all FTS targets
+- `-d`: specifying the experiment directories; the script will scan all json log files of `autofz`.
+  - scanning log files is time consuming, make sure that you don't have unrelated files in the directories.
+  - recommended way is to create a new directory and symbolic link all the fuzzing output directory into it.
+- `-T`: specify the timeout; log files without enough fuzzing time will be excluded.
+- `--pdf`/`--svg`: output pdf/svg. default is jpg.
+- `--ci`: draw confidence interval; default is 97 for 97% confidence interval.
+- `--collab`: used to draw figure 7 in the paper; default is to draw figure 3.
+
 
 ## Output Post Processing by afl-cov
-We use `exiv2` as an exmaple.
+We use `exiv2` as an example.
 ```sh
 afl-cov --output output \
         -d output/exiv2 \
@@ -265,7 +287,7 @@ Note that `output` is the root of fuzzing output directory of `autofz`.
 - `/d/p/cov/unibench/exiv2/exiv2` is binary compiled with coverage support. Please check [`docker/benchmark/coverage/Dockerfile`](./docker/benchmark/coverage/Dockerfile).
 - `/autofz_bench/unibench/exiv2-0.26`: source code directory for `exiv2`, it is required to get line/branch coverage.
 - `--output ouput`, it will create a `cov` directory under `output`.
-- afl-cov will store the log under `output/cov/cov.json`. It has the similiar structure as the log of `autofz`.
+- afl-cov will store the log under `output/cov/cov.json`. It has the similar structure as the log of `autofz`.
 
 ## VM Setup ###
 
