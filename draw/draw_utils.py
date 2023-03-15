@@ -102,7 +102,7 @@ def get_focus_one_from_log(log):
     fuzzers = autofz_args['fuzzer']
     if 'all' in fuzzers:
         fuzzers = list(autofz_config['fuzzer'].keys())
-    focus = autofz_args['focus-one']
+    focus = autofz_args['focus_one']
     assert focus in fuzzers
     return focus
 
@@ -167,8 +167,8 @@ def get_name_from_log(log):
     name = None
     is_autofz = True
 
-    if autofz_args.get('focus-one', None):
-        name = f"focus_{autofz_args['focus-one']}"
+    if autofz_args.get('focus_one', None):
+        name = f"focus_{autofz_args['focus_one']}"
         is_autofz = False
     elif autofz_args.get('enfuzz', None):
         if is_cupid(log):
@@ -215,7 +215,7 @@ def is_enfuzz(log):
 def is_focus(log):
     autofz_args = get_autofz_args(log)
     autofz_config = get_autofz_config(log)
-    if autofz_args['focus-one']:
+    if autofz_args['focus_one']:
         return True
     return False
 
