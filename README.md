@@ -110,7 +110,7 @@ cgcreate -t autofz -a autofz -g cpu:/autofz
 Note that `/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` might not exist in VM; just ignore that error.
 
 #### Security implication
-Docker share the same kernel with the host, and we disable some security feature of kernel (e.g. ASLR through `/proc/sys/kernel/randomize_va_space`) for fuzzing.
+Docker shares the same kernel with the host, and we disable some security feature of kernel (e.g. ASLR through `/proc/sys/kernel/randomize_va_space`) for fuzzing.
 
 Please run it carefully; better in VM.
 
