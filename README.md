@@ -82,6 +82,21 @@ This command mount (by `-v`) your current directory (`$PWD`) to `/work/autofz` i
 
 Afterward, make sure the fuzzing output directory is under `/work/autofz` and it will be preserved under your `$PWD`.
 
+#### Shared Memory Size
+The default size of shared memory pool is 64 MB, and you can increase it by adding `-shm-size` argument.
+
+```sh
+docker run --rm --privileged --shm-size=8gb -it autofz /bin/bash
+```
+
+The above command change the size to 8 GB.
+
+### Note for expeirments
+It is supposed to run **only one** autofz instance at the same time in a single container for the current implementation.
+
+All autofz instances in the same container share a single cgroup for the current implementaion.
+
+Generating different cgroup subgroups for differnet instances is on the roadmap.
 
 ### Init
 After entering the docker container, run the following commands; it will setup necessary parameters for fuzzing and create the cgroups.
