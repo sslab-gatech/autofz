@@ -183,8 +183,6 @@ def get_name_from_log(log):
             name = f'enfuzza'
         else:
             name = f'enfuzz'
-        if autofz_args.get('sync_often', False):
-            name = f'{name}_so'
         is_autofz = False
     else:
         if is_cupid_pool(log):

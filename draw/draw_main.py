@@ -214,7 +214,7 @@ def pick_algo_figure7():
     name = 'autofz_parallel'
     NAME_MAP[name] = f'autofz-10'
     CHOSEN_MULTI.append(name)
-    name = 'enfuzzq_so'
+    name = 'enfuzzq_parallel'
     NAME_MAP[name] = 'CUPID-4, ENFUZZ-Q'
     CHOSEN_MULTI.append(name)
     name = 'cupid_pool_unifuzz_autofz_parallel'
