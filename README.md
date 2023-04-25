@@ -1,5 +1,5 @@
 # autofz
-[![Docker Pulls](https://img.shields.io/docker/pulls/fuyu0425/autofz)](https://hub.docker.com/r/fuyu0425/autofz) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7738458.svg)](https://doi.org/10.5281/zenodo.7738458)
+[![Docker Pulls](https://img.shields.io/docker/pulls/fuyu0425/autofz)](https://hub.docker.com/r/fuyu0425/autofz) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7865366.svg)](https://doi.org/10.5281/zenodo.7865366)
 
 autofz is a meta fuzzer for automated fuzzer composition at runtime.
 
@@ -10,6 +10,16 @@ Some part of the source code might use `autofuzz` (which is the old name of `aut
 We provided the following for artifact evaluation:
 - A pre-built docker image which includes all baseline fuzzers and benchmarks used in the paper.
 - A VM that configures all necessary things and can be used to launch the docker containers. If you want to use the VM, please jump to [VM setup section](#vm-setup).
+
+## Hardware dependencies
+During the evaluation, we use a cluster of Ubuntu 20.04 machines equipped with AMD Ryzen 9
+3900 (12C/24T), 32 GB RAM, and 512 GB SSD disk space.
+To use the provided docker image or VM image, 30 GB disk space is required.
+
+## Software dependencies
+To use the docker image, a working Docker/Podman under Linux is required.
+Alternatively, to use the VM image, VirtualBox/VMware is required.
+
 
 ## Directory Structure
 - `autofz`: main directory for autofz framework
@@ -43,10 +53,10 @@ We provided the following for artifact evaluation:
 
 ### Pull docker image
 ```sh
-docker pull fuyu0425/autofz:v1.0.0
-docker tag fuyu0425/autofz:v1.0.0 autofz
+docker pull fuyu0425/autofz:v1.0.1
+docker tag fuyu0425/autofz:v1.0.1 autofz
 ```
-Please check https://hub.docker.com/repository/docker/fuyu0425/autofz/tags for possible tags. Default is `latest`. We will tag the final artifact version as `v1.0.0` after artifact evaluation.
+Please check https://hub.docker.com/repository/docker/fuyu0425/autofz/tags for possible tags. Default is `latest`.
 
 ## Before running
 ### UID check
@@ -308,7 +318,7 @@ Note that `output` is the root of fuzzing output directory of `autofz`.
 
 1. Download the VirtualBox and install the Oracle Extension Pack
 2. Download and import the OVA files
-   - [OVA URL](https://doi.org/10.5281/zenodo.7738458)
+   - [OVA URL](https://doi.org/10.5281/zenodo.7865366)
 3. Start the VM, the credential is `autofz:autofz`
    - SSH is installed, and you need to configure VirtualBox network first to ssh into the VM. Port forwarding would be the easiest way.
 4. All the data will in the home directory
@@ -335,8 +345,8 @@ autofz.sh run --rm -v `pwd`:/work/autofz -w /work/autofz autofz -o output -t exi
 ## Docker image
 Pre-built docker image:
 ```
-docker pull fuyu0425/autofz:v1.0.0
-docekr tag fuyu0425/autofz:v1.0.0 autofz
+docker pull fuyu0425/autofz:v1.0.1
+docekr tag fuyu0425/autofz:v1.0.1 autofz
 ```
 
 ### Build docker image
@@ -387,6 +397,26 @@ Please look at the content of [config.py](./autofz/config.py) first; it has some
 After modifying `config.py`, you need to do `pip install` again.
 
 decoupling `config.py` is on the roadmap.
+
+
+## Authors
+- Yu-Fu Fu <yufu@gatech.edu>
+- Jaehyuk Lee <jaehyuk@gatech.edu>
+- Taesoo Kim <taesoo@gatech.edu>
+
+## Publications
+```
+autofz: Automated Fuzzer Composition at Runtime
+
+@inproceedings{fu:autofz,
+  title        = {{autofz: Automated Fuzzer Composition at Runtime}},
+  author       = {Yu-Fu Fu and Jaehyuk Lee and Taesoo Kim},
+  booktitle    = {Proceedings of the 32st USENIX Security Symposium (Security)},
+  month        = aug,
+  year         = 2023,
+  address      = {Anaheim, CA},
+}
+```
 
 ## Reference
 
